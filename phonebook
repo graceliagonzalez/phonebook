@@ -81,7 +81,6 @@ def delete_contact():
     show_contacts(contacts)
 
 
-(case-insensitive, partial match)
 def search_contact():
     search_word = search_entry.get().lower()
     results = []
