@@ -6,7 +6,6 @@ import os
 # where contacts are saved
 FILE_NAME = "contacts.csv"
 
-# storing all contacts in memory
 contacts = []
 
 
@@ -27,17 +26,17 @@ def save_contacts():
 
 # show contacts in the table
 def show_contacts(list_to_show):
-    # Clear existing rows
+    # clear existing rows
     table.delete(*table.get_children())
 
-    # Insert each contact into the table
+    # insert each contact into the table
     for contact in list_to_show:
         table.insert("", tk.END, values=contact)
 
 
 # to add a new contact
 def add_contact():
-    # Get input values
+    # get input values
     first = first_entry.get()
     last = last_entry.get()
     phone = phone_entry.get()
@@ -86,7 +85,7 @@ def search_contact():
     results = []
 
     for contact in contacts:
-        # Convert each field to lowercase for comparison
+        # convert each field to lowercase 
         first = contact[0].lower()
         last = contact[1].lower()
         phone = contact[2].lower()
