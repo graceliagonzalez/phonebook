@@ -1,0 +1,162 @@
+import tkinter as tk
+from tkinter import ttk, messagebox
+import csv
+import os
+
+CSV_FILE = "contacts.csv"
+
+
+def load_contacts():
+    contacts = []
+    if os.path.exists(CSV_FILE):
+        with open(CSV_FILE, "r", newline="") as file:
+            reader = csv.reader(file)
+            for row in reader:
+                if len(row) == 4:
+                    contacts.append(row)
+    return contacts
+
+
+def save_contacts():
+    with open(CSV_FILE, "w", newline="") as file:
+        writer = csv.writer(file)
+        writer.writerows(contacts)
+
+
+def refresh_list(contact_list=None):
+    tree.delete(*tree.get_children())
+
+    if contact_list is None:
+        contact_list = contacts
+
+    for contact in contact_list:
+        tree.insert("", tk.END, values=contact)
+
+
+def add_contact():
+    first = first_name_entry.get().strip()
+    last = last_name_entry.get().strip()
+    phone = phone_entry.get().strip()
+    email = email_entry.get().strip()
+
+    if not first or not last or not phone or not email:
+        messagebox.showerror("Error", "All fields are required.")
+        return
+
+    contacts.append([first, last, phone, email])
+    save_contacts()
+    refresh_list()
+    clear_entries()
+    messagebox.showinfo("Success", "Contact added successfully.")
+
+
+def delete_contact():
+    selected = tree.selection()
+
+    if not selected:
+        messagebox.showerror("Error", "Please select a contact to delete.")
+        return
+
+    values = tree.item(selected[0], "values")
+
+    for contact in contacts:
+        if tuple(contact) == values:
+            contacts.remove(contact)
+            break
+
+    save_contacts()
+    refresh_list()
+    messagebox.showinfo("Success", "Contact deleted successfully.")
+
+
+def search_contacts():
+    search_text = search_entry.get().strip().lower()
+
+    if search_text == "":
+        refresh_list()
+        return
+
+    results = []
+
+    for contact in contacts:
+        for field in contact:
+            if search_text in field.lower():
+                results.append(contact)
+                break
+
+    refresh_list(results)
+
+
+def clear_entries():
+    first_name_entry.delete(0, tk.END)
+    last_name_entry.delete(0, tk.END)
+    phone_entry.delete(0, tk.END)
+    email_entry.delete(0, tk.END)
+
+
+# Main window
+root = tk.Tk()
+root.title("Phonebook Management System")
+root.geometry("700x500")
+
+contacts = load_contacts()
+
+# Search section
+search_frame = tk.Frame(root)
+search_frame.pack(pady=10)
+
+search_label = tk.Label(search_frame, text="Search:")
+search_label.grid(row=0, column=0, padx=5)
+
+search_entry = tk.Entry(search_frame, width=40)
+search_entry.grid(row=0, column=1, padx=5)
+
+search_button = tk.Button(search_frame, text="Search", command=search_contacts)
+search_button.grid(row=0, column=2, padx=5)
+
+show_all_button = tk.Button(search_frame, text="Show All", command=refresh_list)
+show_all_button.grid(row=0, column=3, padx=5)
+
+# Contact list
+columns = ("First Name", "Last Name", "Phone Number", "Email")
+tree = ttk.Treeview(root, columns=columns, show="headings", height=10)
+
+for col in columns:
+    tree.heading(col, text=col)
+    tree.column(col, width=160)
+
+tree.pack(pady=10)
+
+# Entry form
+form_frame = tk.Frame(root)
+form_frame.pack(pady=10)
+
+tk.Label(form_frame, text="First Name:").grid(row=0, column=0, padx=5, pady=5)
+first_name_entry = tk.Entry(form_frame)
+first_name_entry.grid(row=0, column=1, padx=5, pady=5)
+
+tk.Label(form_frame, text="Last Name:").grid(row=1, column=0, padx=5, pady=5)
+last_name_entry = tk.Entry(form_frame)
+last_name_entry.grid(row=1, column=1, padx=5, pady=5)
+
+tk.Label(form_frame, text="Phone Number:").grid(row=2, column=0, padx=5, pady=5)
+phone_entry = tk.Entry(form_frame)
+phone_entry.grid(row=2, column=1, padx=5, pady=5)
+
+tk.Label(form_frame, text="Email:").grid(row=3, column=0, padx=5, pady=5)
+email_entry = tk.Entry(form_frame)
+email_entry.grid(row=3, column=1, padx=5, pady=5)
+
+# Buttons
+button_frame = tk.Frame(root)
+button_frame.pack(pady=10)
+
+add_button = tk.Button(button_frame, text="Add Contact", command=add_contact)
+add_button.grid(row=0, column=0, padx=10)
+
+delete_button = tk.Button(button_frame, text="Delete Selected Contact", command=delete_contact)
+delete_button.grid(row=0, column=1, padx=10)
+
+refresh_list()
+
+root.mainloop()
